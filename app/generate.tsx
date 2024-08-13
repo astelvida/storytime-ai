@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, set } from 'react-hook-form';
 import Slider from '@react-native-community/slider';
 import { Chip, Button } from 'react-native-paper';
 import CreateStoryButton from '@/components/CreateStoryButton';
@@ -33,29 +33,13 @@ const themes: Theme[] = [
   { label: '⚽ Sports', value: 'Sports' },
 ];
 
-type CustomFormData = {
-  name: string;
-  age: number;
-  theme: string;
-  gender: string;
-};
-
-const genders = ['Female', 'Male', 'Other'];
-
-const initialData = {
-  name: 'Alice',
-  age: 1,
-  theme: '',
-  gender: '',
-};
+const genders: string[] = ['Female', 'Male', 'Other'];
 
 const Settings: React.FC = () => {
-  const { control, handleSubmit, watch } = useForm<FormData>();
-
-  const selectedAge = watch('age');
-  const selectedName = watch('name');
-  const selectedTheme = watch('theme');
-  const selectedGender = watch('gender');
+  const [name, setName] = React.useState('Maria');
+  const [age, setAge] = React.useState(4);
+  const [theme, setTheme] = React.useState(themes[0].value);
+  const [gender, setGender] = React.useState(genders[0]);
 
   const { data, isSuccess, isError, isIdle, mutate, isPending } = useMutation({
     mutationKey: ['@generate/story'],
@@ -73,20 +57,13 @@ const Settings: React.FC = () => {
     },
   });
 
-  const onSubmit = (userData: CustomFormData) => {
-    console.log(userData);
-    const { name, age, theme, gender } = userData;
+  const onSubmit = () => {
     const prompt = `Create a children's story for a ${age}-year-old ${
       gender === 'Female' ? 'girl' : 'boy'
     } named ${name}. The theme of the story is ${theme}.The story should be engaging and interactive.`;
     console.log(prompt);
     mutate(prompt);
   };
-
-  React.useEffect(() => {
-    console.log('data!!!!');
-    console.log(data);
-  }, [data]);
 
   if (isPending) {
     return <FullPageLoadingOverlay />;
@@ -100,118 +77,70 @@ const Settings: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.settingsContainer}>
         <Text style={styles.label}>Child's Name </Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.input}
-              placeholder="Name"
-              onChangeText={onChange}
-              onBlur={onBlur}
-              value={value}
-            />
-          )}
-          name="name"
-          rules={{ required: true }}
+        <TextInput
+          id="name"
+          style={styles.input}
+          placeholder="Name"
+          onChangeText={setName}
+          value={name}
           defaultValue="Ariana"
         />
       </View>
 
       <View style={styles.settingsContainer}>
-        <Text style={styles.label}>
-          Child's Age: {JSON.stringify(selectedAge)}
-        </Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Slider
-              style={{ height: 40 }}
-              minimumValue={1}
-              maximumValue={10}
-              step={1}
-              minimumTrackTintColor="#FFFFFF"
-              maximumTrackTintColor="#000000"
-              onValueChange={onChange}
-              value={value}
-            />
-          )}
-          name="age"
-          rules={{ required: true, min: 1, max: 10 }}
-          defaultValue={1}
+        <Text style={styles.label}>Child's Age: {JSON.stringify(age)}</Text>
+        <Slider
+          style={{ height: 40 }}
+          minimumValue={1}
+          maximumValue={10}
+          step={1}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#000000"
+          onValueChange={setAge}
+          value={age}
         />
       </View>
 
       <View style={styles.settingsContainer}>
         <Text style={styles.label}>Gender</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View style={styles.chipContainer}>
-              {genders.map((gender) => (
-                <Chip
-                  key={gender}
-                  selected={value === gender}
-                  onPress={() => onChange(gender)}
-                  style={styles.chip}
-                >
-                  {gender}
-                </Chip>
-              ))}
-            </View>
-          )}
-          name="gender"
-          rules={{ required: true }}
-          defaultValue=""
-        />
+        <View style={styles.chipContainer}>
+          {genders.map((curr) => (
+            <Chip
+              key={curr}
+              selected={curr === gender}
+              onPress={() => setGender(curr)}
+              style={styles.chip}
+            >
+              {curr}
+            </Chip>
+          ))}
+        </View>
       </View>
 
       <View style={styles.settingsContainer}>
         <Text style={styles.label}>Theme</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View style={styles.chipContainer}>
-              {themes.map((theme) => (
-                <TouchableOpacity
-                  key={theme.value}
-                  style={[
-                    styles.chip,
-                    {
-                      marginBottom: 8,
-                      borderColor: value === theme.value ? 'blue' : '#ccc',
-                      borderWidth: value === theme.value ? 2 : 1,
-                      borderRadius: 5,
-                      padding: 10,
-                    },
-                  ]}
-                  onPress={() => onChange(theme.value)}
-                >
-                  <Text>{theme.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-          name="theme"
-          rules={{ required: true }}
-          defaultValue=""
-        />
+        <View style={styles.chipContainer}>
+          {themes.map((curr, currIndex) => (
+            <TouchableOpacity
+              key={curr.value}
+              style={[
+                styles.chip,
+                { borderColor: theme === curr.value ? 'blue' : '#ccc' },
+              ]}
+              onPress={() => setTheme(curr.value)}
+            >
+              <Text>{curr.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       <CreateStoryButton
-        onPress={handleSubmit(onSubmit)}
-        isDisabled={
-          !(selectedAge && selectedGender && selectedName && selectedTheme)
-        }
+        onPress={onSubmit}
+        isDisabled={!(age && gender && name && theme)}
       />
 
-      <Text>
-        {JSON.stringify({
-          selectedAge,
-          selectedName,
-          selectedTheme,
-          selectedGender,
-        })}
-      </Text>
+      <Text>{JSON.stringify({ age, name, theme, gender })}</Text>
     </View>
   );
 };
@@ -221,7 +150,6 @@ export default Settings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#8aeaff',
   },
   settingsContainer: {
     marginBottom: 20,
@@ -248,12 +176,16 @@ const styles = StyleSheet.create({
   },
   chip: {
     marginHorizontal: 5,
+    marginBottom: 8,
+    borderRadius: 5,
+    padding: 10,
+    borderWidth: 1,
   },
   picker: {
     height: 50,
     width: 250,
   },
-  selectedTheme: {
+  theme: {
     marginTop: 20,
     fontSize: 16,
     fontStyle: 'italic',
