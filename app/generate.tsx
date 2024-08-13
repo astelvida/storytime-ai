@@ -10,17 +10,33 @@ import {
 import { useForm, Controller, useFormState } from 'react-hook-form';
 import Slider from '@react-native-community/slider';
 import { Chip } from 'react-native-paper';
+import { Picker } from '@react-native-picker/picker';
+
+type Theme =
+  | 'adventure'
+  | 'fantasy'
+  | 'educational'
+  | 'moral_lessons'
+  | 'bedtime'
+  | 'holiday_seasonal'
+  | 'animal_kingdom'
+  | 'mystery_detective'
+  | 'historical'
+  | 'sports_hobbies';
+
+interface ThemeOption {
+  label: string;
+  value: Theme;
+}
 
 type FormData = {
   name: string;
   age: number;
   gender: string;
-  location: string;
+  themes: ThemeOption[];
 };
 
-// const [selectedTheme, setSelectedTheme] = useState("");
-
-const themes = [
+const themes: ThemeOption[] = [
   { label: 'Adventure', value: 'adventure' },
   { label: 'Fantasy', value: 'fantasy' },
   { label: 'Educational', value: 'educational' },
@@ -36,8 +52,8 @@ const themes = [
 const genders = ['female', 'male', 'other'];
 
 const Settings: React.FC = () => {
-  const { control, handleSubmit, getValues, watch } = useForm<FormData>();
-  // const formState = useFormState(control);
+  const { control, handleSubmit, watch } = useForm<FormData>();
+
   const onSubmit = (data: FormData) => {
     console.log(control);
     console.log(data);
@@ -63,25 +79,6 @@ const Settings: React.FC = () => {
           name="name"
           rules={{ required: true }}
           defaultValue="Ariana"
-        />
-      </View>
-
-      <View style={styles.settingsContainer}>
-        <Text style={styles.label}>Location:</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.input}
-              placeholder="Location"
-              onChangeText={onChange}
-              onBlur={onBlur}
-              value={value}
-            />
-          )}
-          name="location"
-          rules={{ required: true }}
-          defaultValue="Hogwarts"
         />
       </View>
 
@@ -132,7 +129,7 @@ const Settings: React.FC = () => {
           defaultValue="female"
         />
       </View>
-
+      {/* 
       <View style={styles.settingsContainer}>
         <Text style={styles.label}>Themes</Text>
         <Controller
@@ -152,7 +149,39 @@ const Settings: React.FC = () => {
           )}
           name="themes"
           rules={{ required: true }}
-          defaultValue=""
+          defaultValue={themes[2]}
+        />
+      </View> */}
+
+      <View style={styles.settingsContainer}>
+        <Text style={styles.label}>Themes</Text>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View>
+              <Picker
+                selectedValue={value}
+                style={styles.picker}
+                onValueChange={(item) => {
+                  onChange(item);
+                }}
+              >
+                {themes.map((theme) => (
+                  <Picker.Item
+                    key={theme.value}
+                    label={theme.label}
+                    value={theme.value}
+                  />
+                ))}
+              </Picker>
+              <Text style={styles.selectedTheme}>
+                Selected Theme: {JSON.stringify(value) || 'None'}
+              </Text>
+            </View>
+          )}
+          name="themes"
+          rules={{ required: true }}
+          defaultValue={themes[2].value}
         />
       </View>
 
