@@ -11,7 +11,7 @@ import Slider from '@react-native-community/slider';
 import { Chip, Button } from 'react-native-paper';
 import CreateStoryButton from '@/components/CreateStoryButton';
 import SelectTheme from '@/components/SelectTheme';
-import OpenAI from 'react-native-openai';
+// import OpenAI from 'react-native-openai';
 
 type Theme = {
   label: string;
