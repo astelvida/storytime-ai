@@ -35,19 +35,53 @@ const genders = ['female', 'male', 'other'];
 
 const Settings: React.FC = () => {
   const { control, handleSubmit, watch } = useForm<FormData>();
+  const [result, setResult] = React.useState('');
 
   const onSubmit = (data: FormData) => {
     console.log(data);
   };
 
-  const openAI = React.useMemo(
-    () =>
-      new OpenAI({
-        apiKey: key,
-        organization,
-      }),
-    []
-  );
+  // const openAI = React.useMemo(
+  //   () =>
+  //     new OpenAI({
+  //       apiKey:
+  //         'sk-04bjLRLgcI11ThjHx2M3_7CCChBQqOq_ZhHuh5QGR9T3BlbkFJiNoCunT5P7Sk2-CTfzLMrhlBactahOOsdVlxBEqp0A',
+  //       organization: 'org-BAl3YpV7pumlbIxLB1lll9Li',
+  //     }),
+  //   []
+  // );
+
+  // React.useEffect(() => {
+  //   // Listen for messages
+  //   openAI.chat.addListener('onChatMessageReceived', (payload) => {
+  //     setResult((message) => {
+  //       const newMessage = payload.choices[0]?.delta.content;
+  //       if (newMessage) {
+  //         return message + newMessage;
+  //       }
+  //       return message;
+  //     });
+  //   });
+
+  //   // Send a message
+  //   openAI.chat.stream({
+  //     messages: [
+  //       {
+  //         role: 'user',
+  //         content: 'How do I star a repo?',
+  //       },
+  //     ],
+  //     model: 'gpt-3.5-turbo',
+  //   });
+
+  //   return () => {};
+  // }, []);
+
+  React.useEffect(() => {
+    console.log('result!!!!');
+
+    console.log(result);
+  }, [result]);
 
   const selectedAge = watch('age');
 
