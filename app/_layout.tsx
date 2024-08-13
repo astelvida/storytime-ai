@@ -1,13 +1,27 @@
 import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useReactQueryDevTools } from '@dev-plugins/react-query';
 
-export default function RootLayout() {
+const queryClient = new QueryClient({});
+
+function RootLayoutNav() {
   return (
-    <PaperProvider>
-      <Stack>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="generate" />
-      </Stack>
-    </PaperProvider>
+    <Stack>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="generate" />
+      <Stack.Screen name="story" />
+    </Stack>
+  );
+}
+
+export default function App() {
+  useReactQueryDevTools(queryClient);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <PaperProvider>
+        <RootLayoutNav />
+      </PaperProvider>
+    </QueryClientProvider>
   );
 }

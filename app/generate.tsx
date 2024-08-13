@@ -5,12 +5,15 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import Slider from '@react-native-community/slider';
 import { Chip, Button } from 'react-native-paper';
 import CreateStoryButton from '@/components/CreateStoryButton';
-import SelectTheme from '@/components/SelectTheme';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import FullPageLoadingOverlay from '../components/FullPageLoadingOverlay';
+import { Redirect } from 'expo-router';
 
 type Theme = {
   label: string;
@@ -30,12 +33,6 @@ const themes: Theme[] = [
   { label: '⚽ Sports', value: 'Sports' },
 ];
 
-enum Gender {
-  Female,
-  Male,
-  Other,
-}
-
 type CustomFormData = {
   name: string;
   age: number;
@@ -54,44 +51,50 @@ const initialData = {
 
 const Settings: React.FC = () => {
   const { control, handleSubmit, watch } = useForm<FormData>();
-  const [result, setResult] = React.useState('');
-
-  const onSubmit = (data: CustomFormData) => {
-    console.log(data);
-
-    const { name, age, theme, gender } = data;
-
-    const prompt = `Create a children's story for a ${age}-year-old ${
-      gender === 'Female' ? 'girl' : 'boy'
-    } named ${name}. The theme of the story is ${theme}.The story should be engaging and interactive.`;
-
-    console.log(prompt);
-    fetch('http://localhost:3000/api/chat', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-      }),
-    }).then((response) =>
-      response.json().then((data) => {
-        console.log('DATA!!!!', JSON.stringify(data.message.content));
-        setResult(data.message.content);
-      })
-    );
-  };
-
-  React.useEffect(() => {
-    console.log('result!!!!');
-    console.log(result);
-  }, [result]);
 
   const selectedAge = watch('age');
   const selectedName = watch('name');
   const selectedTheme = watch('theme');
   const selectedGender = watch('gender');
+
+  const { data, isSuccess, isError, isIdle, mutate, isPending } = useMutation({
+    mutationKey: ['@generate/story'],
+    mutationFn: async (prompt) => {
+      const response = await fetch('http://localhost:3000/api/chat', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+      const result = await response.json();
+      return result.choices[0].message.content;
+    },
+  });
+
+  const onSubmit = (userData: CustomFormData) => {
+    console.log(userData);
+    const { name, age, theme, gender } = userData;
+    const prompt = `Create a children's story for a ${age}-year-old ${
+      gender === 'Female' ? 'girl' : 'boy'
+    } named ${name}. The theme of the story is ${theme}.The story should be engaging and interactive.`;
+    console.log(prompt);
+    mutate(prompt);
+  };
+
+  React.useEffect(() => {
+    console.log('data!!!!');
+    console.log(data);
+  }, [data]);
+
+  if (isPending) {
+    return <FullPageLoadingOverlay />;
+  }
+
+  if (isSuccess && data) {
+    return <Redirect href="/story" />;
+  }
 
   return (
     <View style={styles.container}>
@@ -209,7 +212,6 @@ const Settings: React.FC = () => {
           selectedGender,
         })}
       </Text>
-      {/* <Text>{JSON.stringify(control)}</Text> */}
     </View>
   );
 };
