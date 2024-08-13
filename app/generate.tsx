@@ -3,50 +3,32 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { useForm, Controller, useFormState } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import Slider from '@react-native-community/slider';
-import { Chip } from 'react-native-paper';
-import { Picker } from '@react-native-picker/picker';
+import { Chip, Button } from 'react-native-paper';
+import CreateStoryButton from '@/components/CreateStoryButton';
+import SelectTheme from '@/components/SelectTheme';
+import OpenAI from 'react-native-openai';
 
-type Theme =
-  | 'adventure'
-  | 'fantasy'
-  | 'educational'
-  | 'moral_lessons'
-  | 'bedtime'
-  | 'holiday_seasonal'
-  | 'animal_kingdom'
-  | 'mystery_detective'
-  | 'historical'
-  | 'sports_hobbies';
-
-interface ThemeOption {
+type Theme = {
   label: string;
-  value: Theme;
-}
-
-type FormData = {
-  name: string;
-  age: number;
-  gender: string;
-  themes: ThemeOption[];
+  value: string;
 };
 
-const themes: ThemeOption[] = [
-  { label: 'Adventure', value: 'adventure' },
-  { label: 'Fantasy', value: 'fantasy' },
-  { label: 'Educational', value: 'educational' },
-  { label: 'Moral Lessons', value: 'moral_lessons' },
-  { label: 'Bedtime', value: 'bedtime' },
-  { label: 'Holiday and Seasonal', value: 'holiday_seasonal' },
-  { label: 'Animal Kingdom', value: 'animal_kingdom' },
-  { label: 'Mystery and Detective', value: 'mystery_detective' },
-  { label: 'Historical', value: 'historical' },
-  { label: 'Sports and Hobbies', value: 'sports_hobbies' },
+const themes: Theme[] = [
+  { label: '🌊 Adventure', value: 'Adventure' },
+  { label: '🧚‍♂️ Fantasy', value: 'Fantasy' },
+  { label: '📚 Educational', value: 'Educational' },
+  { label: '💖 Moral Lessons', value: 'Moral Lessons' },
+  { label: '🌙 Bedtime', value: 'Bedtime' },
+  { label: '🎄 Holiday and Seasonal', value: 'Holiday and Seasonal' },
+  { label: '🐾 Animal Kingdom', value: 'Animal Kingdom' },
+  { label: '🕵️‍♂️ Mystery and Detective', value: 'Mystery and Detective' },
+  { label: '🏛️ Historical', value: 'Historical' },
+  { label: '⚽ Sports and Hobbies', value: 'Sports and Hobbies' },
 ];
 
 const genders = ['female', 'male', 'other'];
@@ -55,9 +37,17 @@ const Settings: React.FC = () => {
   const { control, handleSubmit, watch } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {
-    console.log(control);
     console.log(data);
   };
+
+  const openAI = React.useMemo(
+    () =>
+      new OpenAI({
+        apiKey: key,
+        organization,
+      }),
+    []
+  );
 
   const selectedAge = watch('age');
 
@@ -129,63 +119,40 @@ const Settings: React.FC = () => {
           defaultValue="female"
         />
       </View>
-      {/* 
+
       <View style={styles.settingsContainer}>
-        <Text style={styles.label}>Themes</Text>
+        <Text style={styles.label}>Theme</Text>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
-            <View>
+            <View style={styles.chipContainer}>
               {themes.map((theme) => (
-                <Chip
+                <TouchableOpacity
                   key={theme.value}
+                  style={[
+                    styles.chip,
+                    {
+                      marginBottom: 8,
+                      borderColor: value === theme.value ? 'blue' : '#ccc',
+                      borderWidth: value === theme.value ? 2 : 1,
+                      borderRadius: 5,
+                      padding: 10,
+                    },
+                  ]}
                   onPress={() => onChange(theme.value)}
-                  selected={theme.value === value}
                 >
                   <Text>{theme.label}</Text>
-                </Chip>
+                </TouchableOpacity>
               ))}
             </View>
           )}
-          name="themes"
+          name="theme"
           rules={{ required: true }}
-          defaultValue={themes[2]}
-        />
-      </View> */}
-
-      <View style={styles.settingsContainer}>
-        <Text style={styles.label}>Themes</Text>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <View>
-              <Picker
-                selectedValue={value}
-                style={styles.picker}
-                onValueChange={(item) => {
-                  onChange(item);
-                }}
-              >
-                {themes.map((theme) => (
-                  <Picker.Item
-                    key={theme.value}
-                    label={theme.label}
-                    value={theme.value}
-                  />
-                ))}
-              </Picker>
-              <Text style={styles.selectedTheme}>
-                Selected Theme: {JSON.stringify(value) || 'None'}
-              </Text>
-            </View>
-          )}
-          name="themes"
-          rules={{ required: true }}
-          defaultValue={themes[2].value}
+          defaultValue=""
         />
       </View>
 
-      <Button title="Submit" onPress={handleSubmit(onSubmit)} />
+      <CreateStoryButton onPress={handleSubmit(onSubmit)} />
 
       {/* <Text>{JSON.stringify(formState)}</Text> */}
       {/* <Text>{JSON.stringify(control)}</Text> */}
@@ -198,7 +165,7 @@ export default Settings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#8aeaff',
+    // backgroundColor: '#8aeaff',
   },
   settingsContainer: {
     marginBottom: 20,
@@ -219,7 +186,8 @@ const styles = StyleSheet.create({
   },
   chipContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
+    flexWrap: 'wrap',
     marginTop: 10,
   },
   chip: {
