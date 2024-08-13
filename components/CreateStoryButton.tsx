@@ -2,9 +2,13 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import Icon from '@expo/vector-icons/FontAwesome5';
 
-const CreateStoryButton = ({ onPress }) => {
+const CreateStoryButton = ({ onPress, isDisabled }) => {
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.button, { opacity: isDisabled ? 0.5 : 1 }]}
+      onPress={onPress}
+      disabled={isDisabled}
+    >
       <View style={styles.iconContainer}>
         <Icon name="magic" size={20} color="#fff" />
       </View>

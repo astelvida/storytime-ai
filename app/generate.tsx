@@ -10,8 +10,6 @@ import { useForm, Controller } from 'react-hook-form';
 import Slider from '@react-native-community/slider';
 import { Chip, Button } from 'react-native-paper';
 import CreateStoryButton from '@/components/CreateStoryButton';
-import SelectTheme from '@/components/SelectTheme';
-// import OpenAI from 'react-native-openai';
 
 type Theme = {
   label: string;
@@ -24,30 +22,52 @@ const themes: Theme[] = [
   { label: '📚 Educational', value: 'Educational' },
   { label: '💖 Moral Lessons', value: 'Moral Lessons' },
   { label: '🌙 Bedtime', value: 'Bedtime' },
-  { label: '🎄 Holiday and Seasonal', value: 'Holiday and Seasonal' },
+  { label: '🎄 Holiday', value: 'Holiday' },
   { label: '🐾 Animal Kingdom', value: 'Animal Kingdom' },
-  { label: '🕵️‍♂️ Mystery and Detective', value: 'Mystery and Detective' },
+  { label: '🕵️‍♂️ Mystery', value: 'Mystery' },
   { label: '🏛️ Historical', value: 'Historical' },
-  { label: '⚽ Sports and Hobbies', value: 'Sports and Hobbies' },
+  { label: '⚽ Sports', value: 'Sports' },
 ];
 
-const genders = ['female', 'male', 'other'];
+enum Gender {
+  Female,
+  Male,
+  Other,
+}
+
+type CustomFormData = {
+  name: string;
+  age: number;
+  theme: string;
+  gender: string;
+};
+
+const genders = ['Female', 'Male', 'Other'];
+
+const initialData = {
+  name: 'Alice',
+  age: 1,
+  theme: '',
+  gender: '',
+};
 
 const Settings: React.FC = () => {
   const { control, handleSubmit, watch } = useForm<FormData>();
   const [result, setResult] = React.useState('');
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = (data: CustomFormData) => {
     console.log(data);
   };
 
   React.useEffect(() => {
     console.log('result!!!!');
-
     console.log(result);
   }, [result]);
 
   const selectedAge = watch('age');
+  const selectedName = watch('name');
+  const selectedTheme = watch('theme');
+  const selectedGender = watch('gender');
 
   return (
     <View style={styles.container}>
@@ -114,7 +134,7 @@ const Settings: React.FC = () => {
           )}
           name="gender"
           rules={{ required: true }}
-          defaultValue="female"
+          defaultValue=""
         />
       </View>
 
@@ -150,10 +170,21 @@ const Settings: React.FC = () => {
         />
       </View>
 
-      <CreateStoryButton onPress={handleSubmit(onSubmit)} />
+      <CreateStoryButton
+        onPress={handleSubmit(onSubmit)}
+        isDisabled={
+          !(selectedAge && selectedGender && selectedName && selectedTheme)
+        }
+      />
 
-      {/* <Text>{JSON.stringify(formState)}</Text> */}
-      {/* <Text>{JSON.stringify(control)}</Text> */}
+      <Text>
+        {JSON.stringify({
+          selectedAge,
+          selectedName,
+          selectedTheme,
+          selectedGender,
+        })}
+      </Text>
     </View>
   );
 };

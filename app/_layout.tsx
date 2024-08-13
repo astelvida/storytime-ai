@@ -5,7 +5,7 @@ export default function RootLayout() {
   return (
     <PaperProvider>
       <Stack>
-        {/* <Stack.Screen name="index" /> */}
+        <Stack.Screen name="index" />
         <Stack.Screen name="generate" />
       </Stack>
     </PaperProvider>
