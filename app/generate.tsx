@@ -10,6 +10,7 @@ import { useForm, Controller } from 'react-hook-form';
 import Slider from '@react-native-community/slider';
 import { Chip, Button } from 'react-native-paper';
 import CreateStoryButton from '@/components/CreateStoryButton';
+import SelectTheme from '@/components/SelectTheme';
 
 type Theme = {
   label: string;
@@ -57,6 +58,29 @@ const Settings: React.FC = () => {
 
   const onSubmit = (data: CustomFormData) => {
     console.log(data);
+
+    const { name, age, theme, gender } = data;
+
+    const prompt = `Create a children's story for a ${age}-year-old ${
+      gender === 'Female' ? 'girl' : 'boy'
+    } named ${name}. The theme of the story is ${theme}.The story should be engaging and interactive.`;
+
+    console.log(prompt);
+    fetch('http://localhost:3000/api/chat', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+      }),
+    }).then((response) =>
+      response.json().then((data) => {
+        console.log('DATA!!!!', JSON.stringify(data.message.content));
+        setResult(data.message.content);
+      })
+    );
   };
 
   React.useEffect(() => {
@@ -185,6 +209,7 @@ const Settings: React.FC = () => {
           selectedGender,
         })}
       </Text>
+      {/* <Text>{JSON.stringify(control)}</Text> */}
     </View>
   );
 };
