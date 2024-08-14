@@ -5,16 +5,21 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
 } from 'react-native';
-import { useForm, Controller, set, useFieldArray } from 'react-hook-form';
+import {
+  useForm,
+  Controller,
+  useFieldArray,
+  FieldArray,
+} from 'react-hook-form';
 import Slider from '@react-native-community/slider';
-import { Chip, Button } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import CreateStoryButton from '@/components/CreateStoryButton';
 import { useMutation } from '@tanstack/react-query';
 import FullPageLoadingOverlay from '../components/FullPageLoadingOverlay';
 import { Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSQLiteContext } from 'expo-sqlite';
 
 type Theme = {
   label: string;
@@ -32,9 +37,17 @@ const themes: Theme[] = [
   { label: '🕵️‍♂️ Mystery', value: 'Mystery' },
 ];
 
+const genderMap = {
+  Female: 'girl',
+  Male: 'boy',
+  Other: 'child',
+};
 const genders: string[] = ['Female', 'Male', 'Other'];
 
+// Write a captivating children's Fantasy short story for a 4-year-old girl named Maria. The story is set in a castle. The characters in the story are a dragon and a fairy.
 const Settings: React.FC = () => {
+  const db = useSQLiteContext();
+
   const [name, setName] = React.useState('Maria');
   const [age, setAge] = React.useState(4);
   const [theme, setTheme] = React.useState(themes[0].value);
@@ -46,35 +59,59 @@ const Settings: React.FC = () => {
     name: 'characters',
   });
 
-  const { data, isSuccess, isError, isIdle, mutate, isPending } = useMutation({
-    mutationKey: ['@generate/story'],
-    mutationFn: async (prompt) => {
-      const response = await fetch('http://localhost:3000/api/chat', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
-      });
-      const result = await response.json();
-      return result.choices[0].message.content;
-    },
-  });
+  const { isSuccess, isError, mutate, isPending, data, mutateAsync } =
+    useMutation({
+      mutationKey: ['createStory'],
+      mutationFn: async ({ prompt }: { prompt: string }) => {
+        console.log('PROMPT', prompt);
 
-  const generateStory = ({ characters }) => {
-    // handleSubmit(({ characters }) => {
-    console.log(characters);
-    let prompt = `Create a children's story about a ${age}-year-old ${
-      gender === 'Female' ? 'girl' : 'boy'
-    } named ${name}. The theme of the story is ${theme}.`;
+        const response = await fetch('http://localhost:3000/api/chat', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt }),
+        });
+        const result = await response.json();
+        return {
+          id: result.id,
+          content: result.choices[0].message.content,
+          created: result.created,
+          model: result.model,
+          prompt,
+        };
+      },
+      onSuccess(data, variables, context) {
+        console.log(JSON.stringify(data, null, 2));
+        db.runAsync(
+          `INSERT INTO stories (id, content, prompt, model, created) VALUES (?, ?, ?, ?, ?)`,
+          data.id,
+          data.content,
+          data.prompt,
+          data.model,
+          data.created
+        );
+      },
+    });
+
+  const generateStory = (formData: FieldArray) => {
+    const prompt = buildPrompt(formData);
+    console.log('FORM DATA', formData);
+    mutate({ prompt });
+  };
+
+  const buildPrompt = ({ characters }) => {
+    let prompt = `Create a captivating ${theme} children's short story for ${name}, a ${age} year old ${genderMap[gender]}.`;
 
     if (
-      characters.length !== 0 &&
-      characters.some((c) => c.name.trim().length)
+      characters.some(
+        (c: { name: { trim: () => { (): any; new (): any; length: any } } }) =>
+          c.name.trim().length
+      )
     ) {
-      prompt += `The story is about ${characters
-        .map((c) => c.name)
+      prompt += `The characters are ${characters
+        .map((c: { name: any }) => c.name)
         .join(', ')}.`;
     }
 
@@ -82,14 +119,14 @@ const Settings: React.FC = () => {
       prompt += `The story takes place in ${location}.`;
     }
     console.log(prompt);
-    mutate(prompt);
+    return prompt;
   };
 
   const addCharacter = () => {
     append({ name: '' });
   };
 
-  const removeCharacter = (index) => {
+  const removeCharacter = (index: number | number[] | undefined) => {
     remove(index);
   };
 
@@ -164,7 +201,7 @@ const Settings: React.FC = () => {
       <View style={styles.settingContainer}>
         <Text style={styles.label}>Theme</Text>
         <View style={styles.chipContainer}>
-          {themes.map((curr, currIndex) => (
+          {themes.map((curr, _currIndex) => (
             <TouchableOpacity
               key={curr.value}
               style={[
@@ -235,7 +272,6 @@ const styles = StyleSheet.create({
   settingsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    // alignItems: 'center',
   },
   settingContainer: {
     marginBottom: 15,

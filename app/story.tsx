@@ -6,9 +6,11 @@ import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
 export default function Story() {
   const router = useRouter();
   const data = useMutationState({
-    filters: { mutationKey: ['@generate/story'] },
+    filters: { mutationKey: ['createStory'] },
     select: (mutation) => mutation.state.data,
   });
+
+  const latest = data[data.length - 1];
 
   return (
     <View
@@ -19,7 +21,7 @@ export default function Story() {
       }}
     >
       <ScrollView style={{ flex: 1 }}>
-        <Text>{data}</Text>
+        <Text>{latest.content}</Text>
       </ScrollView>
       <TouchableOpacity onPress={() => {}}>
         <Text>Save</Text>
