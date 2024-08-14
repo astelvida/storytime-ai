@@ -4,13 +4,13 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
+  TouchableOpacity
 } from 'react-native';
 import {
   useForm,
   Controller,
   useFieldArray,
-  FieldArray,
+  FieldArray
 } from 'react-hook-form';
 import Slider from '@react-native-community/slider';
 import { Button } from 'react-native-paper';
@@ -34,13 +34,13 @@ const themes: Theme[] = [
   { label: '🌙 Bedtime', value: 'Bedtime' },
   { label: '🎄 Holiday', value: 'Holiday' },
   { label: '🐾 Animal Kingdom', value: 'Animal Kingdom' },
-  { label: '🕵️‍♂️ Mystery', value: 'Mystery' },
+  { label: '🕵️‍♂️ Mystery', value: 'Mystery' }
 ];
 
 const genderMap = {
   Female: 'girl',
   Male: 'boy',
-  Other: 'child',
+  Other: 'child'
 };
 const genders: string[] = ['Female', 'Male', 'Other'];
 
@@ -56,27 +56,28 @@ const Settings: React.FC = () => {
   const { control, handleSubmit } = useForm();
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'characters',
+    name: 'characters'
   });
 
   const { isSuccess, mutate, isPending, data } = useMutation({
     mutationKey: ['createStory'],
-    mutationFn: async ({ prompt }: { prompt: string }) => {
+    mutationFn: async ({ name, age, gender, theme }) => {
       const response = await fetch('http://localhost:3000/api/chat', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ data: { age, gender, theme } })
       });
       const result = await response.json();
+
       return {
         id: result.id,
         content: result.choices[0].message.content,
         created: result.created,
         model: result.model,
-        prompt,
+        prompt:[ name, gender, age, theme ].join(', ')
       };
     },
     onSuccess(data) {
@@ -88,33 +89,12 @@ const Settings: React.FC = () => {
         data.model,
         data.created
       );
-    },
+    }
   });
 
   const generateStory = (formData: FieldArray) => {
-    const prompt = buildPrompt(formData);
-    mutate({ prompt });
-  };
-
-  const buildPrompt = ({ characters }) => {
-    let prompt = `Create a captivating ${theme} children's short story for ${name}, a ${age} year old ${genderMap[gender]}.`;
-
-    if (
-      characters.some(
-        (c: { name: { trim: () => { (): any; new (): any; length: any } } }) =>
-          c.name.trim().length
-      )
-    ) {
-      prompt += `The characters are ${characters
-        .map((c: { name: any }) => c.name)
-        .join(', ')}.`;
-    }
-
-    if (location.trim().length) {
-      prompt += `The story takes place in ${location}.`;
-    }
-    console.log(prompt);
-    return prompt;
+    // const prompt = buildPrompt(formData);
+    mutate({ name, age, gender: genderMap[gender], theme });
   };
 
   const addCharacter = () => {
@@ -157,7 +137,7 @@ const Settings: React.FC = () => {
                 onPress={() => setGender(curr)}
                 style={[
                   styles.chip,
-                  { borderColor: gender === curr ? 'blue' : '#ccc' },
+                  { borderColor: gender === curr ? 'blue' : '#ccc' }
                 ]}
               >
                 <Text>{curr}</Text>
@@ -201,7 +181,7 @@ const Settings: React.FC = () => {
               key={curr.value}
               style={[
                 styles.chip,
-                { borderColor: theme === curr.value ? 'blue' : '#ccc' },
+                { borderColor: theme === curr.value ? 'blue' : '#ccc' }
               ]}
               onPress={() => setTheme(curr.value)}
             >
@@ -259,24 +239,24 @@ export default Settings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    padding: 10
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
   settingsRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-start'
   },
   settingContainer: {
     marginBottom: 15,
     marginRight: 20,
-    gap: 10,
+    gap: 10
   },
   label: {
     fontSize: 16,
     color: '#333',
-    fontWeight: '600',
+    fontWeight: '600'
   },
   input: {
     height: 40,
@@ -285,28 +265,46 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f9f9f9'
   },
   chipContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'wrap'
   },
   chip: {
     marginBottom: 8,
     borderRadius: 5,
     padding: 10,
     borderWidth: 1,
-    marginRight: 8,
+    marginRight: 8
   },
   theme: {
     marginTop: 20,
     fontSize: 16,
-    fontStyle: 'italic',
+    fontStyle: 'italic'
   },
   bottomContainer: {
     position: 'absolute',
     bottom: 10,
     width: '100%',
-    padding: 26,
-  },
+    padding: 26
+  }
 });
+
+
+
+  // const buildPrompt = ({ characters }) => {
+  //   let prompt = `Create a captivating ${theme} children's short story for ${name}, a ${age} year old ${genderMap[gender]}.`;
+
+  //   if (characters.some((c) => c.name.trim().length)) {
+  //     const characterNames = characters
+  //     .map((c) => c.name)
+  //     .join(', ')
+  //     prompt += `The characters are ${characterNames}.`;
+  //   }
+  //   if (location.trim().length) {
+  //     prompt += `The story takes place in ${location}.`;
+  //   }
+  //   console.log(prompt);
+  //   return prompt;
+  // };

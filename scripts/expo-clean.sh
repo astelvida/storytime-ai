@@ -33,11 +33,11 @@ if [ -d "ios" ]; then
 fi
 
 # Clear Android build artifacts (if applicable)
-if [ -d "android" ]; then
-  echo "Clearing Android build artifacts..."
-  cd android
-  ./gradlew clean
-  cd ..
-fi
+# if [ -d "android" ]; then
+#   echo "Clearing Android build artifacts..."
+#   cd android
+#   ./gradlew clean
+#   cd ..
+# fi
 
 echo "Cleaning completed successfully."

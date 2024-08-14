@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useGlobalSearchParams } from 'expo-router';
-import { getStoryById } from '@/Database';
+import { getStoryById } from '@/store/Database';
 import { useSQLiteContext } from 'expo-sqlite';
 import FullPageLoadingOverlay from '@/components/FullPageLoadingOverlay';
 import { StoryView } from '../StoryView';
