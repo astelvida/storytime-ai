@@ -6,36 +6,43 @@ export async function getStoryById(db: SQLiteDatabase, storyId: string) {
   return story;
 }
 
+export async function dropStories(db: SQLiteDatabase) {
+  db.execAsync(`DROP TABLE IF EXISTS stories;`);
+  await db.execAsync(`
+    PRAGMA journal_mode = 'wal';
+    CREATE TABLE stories (id TEXT PRIMARY KEY NOT NULL, content TEXT NOT NULL, prompt TEXT NOT NULL,  model TEXT NOT NULL, created INTEGER NOT NULL);
+    `);
+}
+
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-  // await db.execAsync(`DROP TABLE IF EXISTS stories;`);
   const DATABASE_VERSION = 1;
   let { user_version: currentDbVersion } = await db.getFirstAsync<{
     user_version: number;
   }>('PRAGMA user_version');
-  if (currentDbVersion >= DATABASE_VERSION) {
-    return;
-  }
+  // if (currentDbVersion >= DATABASE_VERSION) {
+  //   return;
+  // }
   if (currentDbVersion === 0) {
     await db.execAsync(`
-  PRAGMA journal_mode = 'wal';
-  CREATE TABLE stories (id TEXT PRIMARY KEY NOT NULL, content TEXT NOT NULL, prompt TEXT NOT NULL,  model TEXT NOT NULL, created INTEGER NOT NULL);
-  `);
-    await db.runAsync(
-      'INSERT INTO stories (id, content, prompt, model, created) VALUES (?, ?, ?, ?, ?)',
-      '123AAA',
-      'hello! this is a sample story',
-      'sample prompt',
-      'sample model',
-      1625812457
-    );
-    await db.runAsync(
-      'INSERT INTO stories (id, content, prompt, model, created) VALUES (?, ?, ?, ?, ?)',
-      '345',
-      'ola! this is a sample story',
-      'sample prompt ola',
-      'sample model',
-      1625812459
-    );
+    PRAGMA journal_mode = 'wal';
+    CREATE TABLE stories (id TEXT PRIMARY KEY NOT NULL, content TEXT NOT NULL, prompt TEXT NOT NULL,  model TEXT NOT NULL, created INTEGER NOT NULL);
+    `);
+    // await db.runAsync(
+    //   'INSERT INTO stories (id, content, prompt, model, created) VALUES (?, ?, ?, ?, ?)',
+    //   '123AAA',
+    //   'hello! this is a sample story',
+    //   'sample prompt',
+    //   'sample model',
+    //   1625812457
+    // );
+    // await db.runAsync(
+    //   'INSERT INTO stories (id, content, prompt, model, created) VALUES (?, ?, ?, ?, ?)',
+    //   '345',
+    //   'ola! this is a sample story',
+    //   'sample prompt ola',
+    //   'sample model',
+    //   1625812459
+    // );
     currentDbVersion = 1;
   }
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

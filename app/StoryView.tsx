@@ -8,56 +8,99 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useNarrateStory } from '@/hooks/useNarrateStory';
+import ScreenWrapper from '@/components/ScreenWrapper';
+import { Button, FAB, Icon } from 'react-native-paper';
 
 interface StoryViewProps {
   data: any;
 }
 
-export function StoryView({ data }: StoryViewProps) {
-  const [playSound] = useNarrateStory(data.id);
-
-  const router = useRouter();
+const MyIconButton = ({ icon, onPress, style }) => {
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={onPress} style={style}>
+      <Icon source={icon} size={36} color="#5a5a5aff" />
+    </TouchableOpacity>
+  );
+};
+
+export function StoryView({ data }: StoryViewProps) {
+  const { playSound, pauseSound, sound } = useNarrateStory(data.id);
+
+  const [isPlaying, setIsPlaying] = React.useState(false);
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      pauseSound();
+    } else {
+      playSound();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  console.log(sound);
+  const router = useRouter();
+
+  const handleSave = async () => {
+    // const result = await db.runAsync(
+    //   'INSERT INTO stories (content, model, prompt) VALUES (?, ?, ?)',
+    //   [data.content, data.model, data.prompt]
+    // );
+    console.log('SAVED');
+  };
+  const gradient = ['#f9957f', '#f2f5D0'];
+  const white = ['#fff', '#fff'];
+  return (
+    <ScreenWrapper colors={white}>
       <ScrollView style={styles.scrollView}>
         <Text style={styles.contentText}>{data.content}</Text>
-        <TouchableOpacity style={styles.button} onPress={playSound}>
-          <Text style={styles.buttonText}>Narrate</Text>
-        </TouchableOpacity>
       </ScrollView>
-      <TouchableOpacity style={styles.button} onPress={() => {}}>
-        <Text style={styles.buttonText}>Save</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push('/generate')}
-      >
-        <Text style={styles.buttonText}>Dismiss</Text>
-      </TouchableOpacity>
-    </View>
+
+      <View style={styles.buttonsContainer}>
+        <MyIconButton
+          icon="refresh"
+          onPress={() => router.push('/generate')}
+          style={[styles.button, { left: 0 }]}
+        />
+        <MyIconButton
+          icon="content-save-outline"
+          onPress={handleSave}
+          style={[styles.button, { left: 40 }]}
+        />
+
+        <FAB
+          size="medium"
+          icon={isPlaying ? 'play' : 'pause'}
+          style={styles.fab}
+          onPress={togglePlay}
+        />
+      </View>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    bottom: 15,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 0,
+    borderRadius: 50,
+  },
+  button: {
+    position: 'absolute',
+    bottom: 0,
   },
   scrollView: {
     flex: 1,
-    marginBottom: 16,
+    marginBottom: 100,
   },
   contentText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 10,
+    fontSize: 20,
+    lineHeight: 28,
   },
   buttonText: {
     color: '#fff',

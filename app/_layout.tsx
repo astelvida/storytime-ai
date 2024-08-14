@@ -4,7 +4,7 @@ import { PaperProvider } from 'react-native-paper';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import { SQLiteProvider } from 'expo-sqlite/next';
-import { migrateDbIfNeeded } from '@/Database';
+import { migrateDbIfNeeded, dropStories } from '@/Database';
 
 function RootLayoutNav() {
   return (

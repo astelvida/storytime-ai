@@ -21,7 +21,7 @@ export default function Stories() {
     queryKey: ['stories'],
     queryFn: async () => {
       const result = await db.getAllAsync<Story>('SELECT * FROM stories');
-      return result;
+      return result.sort((a, b) => b.created - a.created);
     },
   });
 
@@ -45,12 +45,6 @@ export default function Stories() {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      <TouchableOpacity onPress={() => {}}>
-        <Text>Save</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('/generate')}>
-        <Text>Dismiss</Text>
-      </TouchableOpacity>
     </View>
   ) : null;
 }
