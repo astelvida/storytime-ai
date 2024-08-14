@@ -1,6 +1,6 @@
+import React from 'react';
 import FullPageLoadingOverlay from '@/components/FullPageLoadingOverlay';
-import { Ionicons } from '@expo/vector-icons';
-import { useMutationState, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
@@ -10,7 +10,7 @@ export default function Stories() {
 
   const router = useRouter();
 
-  const { data, isPending, isLoading, isError, isSuccess } = useQuery({
+  const { data, isPending, isLoading, isSuccess } = useQuery({
     queryKey: ['stories'],
     queryFn: async () => {
       const result = await db.getAllAsync<Story>('SELECT * FROM stories');
@@ -26,13 +26,16 @@ export default function Stories() {
     <View
       style={{
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
       }}
     >
       <ScrollView style={{ flex: 1 }}>
-        {data.map((entry, index) => (
-          <Text key={entry.id}>{entry.content}</Text>
+        {data.map((entry) => (
+          <TouchableOpacity
+            key={entry.id}
+            onPress={() => router.push(`/story/${entry.id}`)}
+          >
+            <Text key={entry.id}>{entry.content}</Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
       <TouchableOpacity onPress={() => {}}>

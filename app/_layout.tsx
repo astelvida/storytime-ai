@@ -1,27 +1,18 @@
+import React from 'react';
 import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useReactQueryDevTools } from '@dev-plugins/react-query';
-import {
-  SQLiteProvider,
-  useSQLiteContext,
-  type SQLiteDatabase,
-} from 'expo-sqlite/next';
+import { SQLiteProvider } from 'expo-sqlite/next';
 import { migrateDbIfNeeded } from '@/Database';
 
 function RootLayoutNav() {
   return (
     <Stack>
       <Stack.Screen name="index" />
-      <Stack.Screen
-        name="generate"
-        options={
-          {
-            // headerShown: false,
-          }
-        }
-      />
+      <Stack.Screen name="generate" />
       <Stack.Screen name="story" />
+      <Stack.Screen name="story/[id]" />
       <Stack.Screen name="stories" />
     </Stack>
   );

@@ -1,5 +1,11 @@
 import { openDatabaseAsync, SQLiteDatabase } from 'expo-sqlite/next';
 
+export async function getStoryById(db: SQLiteDatabase, storyId: string) {
+  const query = 'SELECT * FROM stories WHERE id = ?';
+  const story = await db.getFirstAsync(query, storyId);
+  return story;
+}
+
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   // await db.execAsync(`DROP TABLE IF EXISTS stories;`);
   const DATABASE_VERSION = 1;
@@ -77,4 +83,4 @@ async function checkDb() {
   }
 }
 
-checkDb();
+// checkDb();

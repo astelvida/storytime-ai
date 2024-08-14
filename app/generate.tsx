@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -59,45 +59,40 @@ const Settings: React.FC = () => {
     name: 'characters',
   });
 
-  const { isSuccess, isError, mutate, isPending, data, mutateAsync } =
-    useMutation({
-      mutationKey: ['createStory'],
-      mutationFn: async ({ prompt }: { prompt: string }) => {
-        console.log('PROMPT', prompt);
-
-        const response = await fetch('http://localhost:3000/api/chat', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ prompt }),
-        });
-        const result = await response.json();
-        return {
-          id: result.id,
-          content: result.choices[0].message.content,
-          created: result.created,
-          model: result.model,
-          prompt,
-        };
-      },
-      onSuccess(data, variables, context) {
-        console.log(JSON.stringify(data, null, 2));
-        db.runAsync(
-          `INSERT INTO stories (id, content, prompt, model, created) VALUES (?, ?, ?, ?, ?)`,
-          data.id,
-          data.content,
-          data.prompt,
-          data.model,
-          data.created
-        );
-      },
-    });
+  const { isSuccess, mutate, isPending, data } = useMutation({
+    mutationKey: ['createStory'],
+    mutationFn: async ({ prompt }: { prompt: string }) => {
+      const response = await fetch('http://localhost:3000/api/chat', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+      const result = await response.json();
+      return {
+        id: result.id,
+        content: result.choices[0].message.content,
+        created: result.created,
+        model: result.model,
+        prompt,
+      };
+    },
+    onSuccess(data) {
+      db.runAsync(
+        `INSERT INTO stories (id, content, prompt, model, created) VALUES (?, ?, ?, ?, ?)`,
+        data.id,
+        data.content,
+        data.prompt,
+        data.model,
+        data.created
+      );
+    },
+  });
 
   const generateStory = (formData: FieldArray) => {
     const prompt = buildPrompt(formData);
-    console.log('FORM DATA', formData);
     mutate({ prompt });
   };
 
@@ -201,7 +196,7 @@ const Settings: React.FC = () => {
       <View style={styles.settingContainer}>
         <Text style={styles.label}>Theme</Text>
         <View style={styles.chipContainer}>
-          {themes.map((curr, _currIndex) => (
+          {themes.map((curr) => (
             <TouchableOpacity
               key={curr.value}
               style={[

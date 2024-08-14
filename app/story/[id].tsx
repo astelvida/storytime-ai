@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMutationState } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 import {
   Text,
@@ -8,22 +8,33 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { getStoryById } from '@/Database';
+import { useSQLiteContext } from 'expo-sqlite';
+import FullPageLoadingOverlay from '@/components/FullPageLoadingOverlay';
 
 export default function Story() {
+  const db = useSQLiteContext();
   const router = useRouter();
   const params = useGlobalSearchParams();
 
-  const data = useMutationState({
-    filters: { mutationKey: ['createStory'] },
-    select: (mutation) => mutation.state.data,
+  const { data, isFetched, isPending, isError, isSuccess } = useQuery({
+    queryKey: ['story', params.id],
+    queryFn: async () => {
+      const result = await getStoryById(db, params.id);
+      return result;
+    },
   });
 
-  const story = data[data.length - 1];
+  if (isPending || !isFetched) {
+    return <FullPageLoadingOverlay />;
+  }
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        {story ? <Text style={styles.contentText}>{story.content}</Text> : null}
+        {data && isSuccess ? (
+          <Text style={styles.contentText}>{data.content}</Text>
+        ) : null}
       </ScrollView>
       <TouchableOpacity style={styles.button} onPress={() => {}}>
         <Text style={styles.buttonText}>Save</Text>
