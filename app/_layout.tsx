@@ -9,11 +9,11 @@ import { migrateDbIfNeeded } from '@/Database';
 function RootLayoutNav() {
   return (
     <Stack>
-      <Stack.Screen name="index" />
       <Stack.Screen name="generate" />
       <Stack.Screen name="story" />
       <Stack.Screen name="story/[id]" />
       <Stack.Screen name="stories" />
+      <Stack.Screen name="index" />
     </Stack>
   );
 }

@@ -5,6 +5,13 @@ import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
 
+type Story = {
+  id: number;
+  content: string;
+  model: string;
+  created: string;
+  prompt: string;
+};
 export default function Stories() {
   const db = useSQLiteContext();
 
